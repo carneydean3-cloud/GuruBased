@@ -1,0 +1,7 @@
+# Keep config.js out of public repos if keys are sensitive
+# Remove this line if using Netlify env vars instead
+# config.js
+
+.DS_Store
+Thumbs.db
+node_modules/
