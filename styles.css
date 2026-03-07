@@ -685,3 +685,20 @@ footer {
   background: var(--accent);
   opacity: 0.4;
 }
+
+/* ─── FOOTER LINKS ───────────────────────────────────── */
+.footer-links {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+.footer-links a {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--accent); }
