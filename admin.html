@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Guru Based</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #161616;
+      --border: #1e1e1e;
+      --text: #f0f0f0;
+      --text-secondary: #888888;
+      --accent: #00ffcc;
+      --danger: #ff4444;
+      --success: #00ff88;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 40px;
+      text-align: center;
+    }
+    .login-box h1 {
+      font-family: var(--mono);
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .login-box p { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 32px; }
+    .login-box input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      outline: none;
+      text-align: center;
+      letter-spacing: 0.1em;
+    }
+    .login-box input:focus { border-color: var(--accent); }
+    .login-error { color: var(--danger); font-size: 0.75rem; font-family: var(--mono); margin-bottom: 12px; display: none; }
+
+    /* ── ADMIN LAYOUT ── */
+    .admin-wrap { display: none; min-height: 100vh; }
+    .admin-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .admin-logo { font-family: var(--mono); font-size: 0.85rem; letter-spacing: 0.15em; color: var(--accent); }
+    .admin-logo span { color: var(--text-secondary); font-weight: 400; }
+    .admin-nav { display: flex; gap: 8px; }
+    .admin-nav button {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    .admin-nav button.active, .admin-nav button:hover { border-color: var(--accent); color: var(--accent); }
+    .logout-btn { color: var(--danger) !important; border-color: var(--danger) !important; }
+
+    .admin-body { padding: 32px 24px; max-width: 1100px; margin: 0 auto; }
+
+    /* ── PANELS ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── ARTICLE LIST ── */
+    .article-list { display: flex; flex-direction: column; gap: 12px; }
+    .article-list-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: border-color 0.2s;
+    }
+    .article-list-item:hover { border-color: var(--accent); }
+    .article-list-info { flex: 1; }
+    .article-list-title { font-family: var(--mono); font-size: 0.9rem; color: var(--text); margin-bottom: 4px; }
+    .article-list-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--text-secondary); letter-spacing: 0.05em; }
+    .article-list-status {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border-radius: 3px;
+    }
+    .status-published { background: rgba(0,255,136,0.1); color: var(--success); border: 1px solid var(--success); }
+    .status-draft { background: rgba(136,136,136,0.1); color: var(--text-secondary); border: 1px solid var(--border); }
+    .article-list-actions { display: flex; gap: 8px; }
+    .btn-sm {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      padding: 6px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-sm.danger:hover { border-color: var(--danger); color: var(--danger); }
+    .btn-sm.primary { border-color: var(--accent); color: var(--accent); }
+
+    /* ── FORM ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    @media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } .form-grid .full { grid-column: 1; } }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { min-height: 320px; resize: vertical; font-family: var(--mono); font-size: 0.8rem; line-height: 1.6; }
+    .form-group select option { background: var(--surface); }
+
+    .form-hint { font-size: 0.7rem; color: var(--text-secondary); font-family: var(--mono); margin-top: 4px; }
+
+    .toggle-group { display: flex; align-items: center; gap: 12px; }
+    .toggle-group label { margin: 0; }
+    input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 12px 24px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--bg);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-secondary {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 12px 24px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--text-secondary); color: var(--text); }
+    .btn-danger {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 12px 24px;
+      border: 1px solid var(--danger);
+      background: transparent;
+      color: var(--danger);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: auto;
+    }
+    .btn-danger:hover { background: var(--danger); color: white; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 12px 20px;
+      border-radius: 4px;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { border-color: var(--danger); color: var(--danger); }
+
+    /* ── LOADING ── */
+    .admin-loading {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      padding: 40px 0;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .faq-builder { display: flex; flex-direction: column; gap: 12px; }
+    .faq-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: start;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+    }
+    .faq-row input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text);
+      font-size: 0.85rem;
+      padding: 8px 10px;
+      outline: none;
+      width: 100%;
+    }
+    .faq-row input:focus { border-color: var(--accent); }
+    .remove-faq {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--danger);
+      border-radius: 3px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+      align-self: center;
+    }
+    .remove-faq:hover { background: var(--danger); color: white; border-color: var(--danger); }
+    .add-faq-btn {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      padding: 8px 16px;
+      border: 1px dashed var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: flex-start;
+      margin-top: 4px;
+    }
+    .add-faq-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      font-family: var(--mono);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-box">
+    <h1>GURU BASED</h1>
+    <p>Admin Panel — Authorised access only</p>
+    <div class="login-error" id="login-error">Incorrect password.</div>
+    <input type="password" id="admin-password" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()">
+    <button class="btn-primary" style="width:100%" onclick="login()">Enter Lab →</button>
+  </div>
+</div>
+
+<!-- ── ADMIN ── -->
+<div class="admin-wrap" id="admin-screen">
+  <header class="admin-header">
+    <div class="admin-logo">GURU BASED <span>/ Admin</span></div>
+    <div class="admin-nav">
+      <button class="active" onclick="showPanel('articles', this)">Articles</button>
+      <button onclick="showPanel('new', this)">New Article</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="admin-body">
+
+    <!-- ARTICLES LIST -->
+    <div class="panel active" id="panel-articles">
+      <div class="panel-title">All Articles</div>
+      <div id="articles-list"><div class="admin-loading">LOADING_ARTICLES...</div></div>
+    </div>
+
+    <!-- NEW / EDIT ARTICLE -->
+    <div class="panel" id="panel-new">
+      <div class="panel-title" id="form-panel-title">New Article</div>
+      <input type="hidden" id="edit-id">
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="f-title" placeholder="Article title" oninput="autoSlug()">
+        </div>
+        <div class="form-group">
+          <label>Slug *</label>
+          <input type="text" id="f-slug" placeholder="article-slug">
+          <span class="form-hint">URL: /article?slug=your-slug</span>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" id="f-category" placeholder="e.g. Content Systems">
+        </div>
+        <div class="form-group">
+          <label>Read Time</label>
+          <input type="text" id="f-read-time" placeholder="e.g. 5 min read">
+        </div>
+        <div class="form-group">
+          <label>Author</label>
+          <input type="text" id="f-author" value="Guru Based">
+        </div>
+        <div class="form-group">
+          <label>Publish Date</label>
+          <input type="date" id="f-publish-date">
+        </div>
+        <div class="form-group full">
+          <label>Excerpt</label>
+          <input type="text" id="f-excerpt" placeholder="Short description shown on blog grid (1–2 lines)">
+        </div>
+        <div class="form-group full">
+          <label>Cover Image URL</label>
+          <input type="text" id="f-cover-image" placeholder="https://... (paste image URL)">
+        </div>
+        <div class="form-group full">
+          <label>Audio URL</label>
+          <input type="text" id="f-audio-url" placeholder="https://... (paste MP3 URL from your voice cloner)">
+          <span class="form-hint">Optional — audio player appears on article if filled in</span>
+        </div>
+        <div class="form-group full">
+          <label>Content (Markdown) *</label>
+          <textarea id="f-content" placeholder="Write your article in Markdown...&#10;&#10;## Heading&#10;&#10;Your text here.&#10;&#10;- Bullet point&#10;- Another point"></textarea>
+          <span class="form-hint">Supports full Markdown — ## headings, **bold**, *italic*, - lists, > blockquotes</span>
+        </div>
+        <div class="form-group full">
+          <label>FAQs</label>
+          <div class="faq-builder" id="faq-builder"></div>
+          <button class="add-faq-btn" onclick="addFaq()">+ Add FAQ</button>
+        </div>
+        <div class="form-group full">
+          <div class="toggle-group">
+            <input type="checkbox" id="f-published">
+            <label for="f-published" style="font-family:var(--mono);font-size:0.75rem;letter-spacing:0.1em;color:var(--text)">Publish article (visible on site)</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" onclick="saveArticle()">Save Article →</button>
+        <button class="btn-secondary" onclick="showPanel('articles', document.querySelector('.admin-nav button'))">Cancel</button>
+        <button class="btn-danger" id="delete-btn" style="display:none" onclick="deleteArticle()">Delete Article</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+// ── AUTH ──────────────────────────────────────────────────
+const ADMIN_PASSWORD = 'gurubased114884';
+
+function login() {
+  const val = document.getElementById('admin-password').value;
+  if (val === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    loadArticles();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function logout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-screen').style.display = 'none';
+  document.getElementById('admin-password').value = '';
+}
+
+// ── PANELS ───────────────────────────────────────────────
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'new') resetForm();
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type === 'error' ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ── LOAD ARTICLES ─────────────────────────────────────────
+async function loadArticles() {
+  const list = document.getElementById('articles-list');
+  list.innerHTML = '<div class="admin-loading">LOADING_ARTICLES...</div>';
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/articles?order=created_at.desc&select=id,title,slug,category,is_published,publish_date`,
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Accept-Profile': 'public' } }
+    );
+    const articles = await res.json();
+    if (!articles.length) {
+      list.innerHTML = '<div class="empty-state">NO_ARTICLES_YET — Click "New Article" to get started.</div>';
+      return;
+    }
+    list.innerHTML = '<div class="article-list">' + articles.map(a => `
+      <div class="article-list-item">
+        <div class="article-list-info">
+          <div class="article-list-title">${a.title}</div>
+          <div class="article-list-meta">${a.slug}${a.category ? ' · ' + a.category : ''}${a.publish_date ? ' · ' + a.publish_date : ''}</div>
+        </div>
+        <span class="article-list-status ${a.is_published ? 'status-published' : 'status-draft'}">${a.is_published ? 'LIVE' : 'DRAFT'}</span>
+        <div class="article-list-actions">
+          <button class="btn-sm primary" onclick="editArticle('${a.id}')">Edit</button>
+          <button class="btn-sm" onclick="window.open('/article.html?slug=${a.slug}','_blank')">View</button>
+        </div>
+      </div>
+    `).join('') + '</div>';
+  } catch (err) {
+    list.innerHTML = '<div class="empty-state">Error loading articles.</div>';
+  }
+}
+
+// ── EDIT ARTICLE ──────────────────────────────────────────
+async function editArticle(id) {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/articles?id=eq.${id}&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    const data = await res.json();
+    if (!data.length) return;
+    const a = data[0];
+
+    document.getElementById('edit-id').value = a.id;
+    document.getElementById('f-title').value = a.title || '';
+    document.getElementById('f-slug').value = a.slug || '';
+    document.getElementById('f-category').value = a.category || '';
+    document.getElementById('f-read-time').value = a.read_time || '';
+    document.getElementById('f-author').value = a.author || 'Guru Based';
+    document.getElementById('f-publish-date').value = a.publish_date || '';
+    document.getElementById('f-excerpt').value = a.excerpt || '';
+    document.getElementById('f-cover-image').value = a.cover_image || '';
+    document.getElementById('f-audio-url').value = a.audio_url || '';
+    document.getElementById('f-content').value = a.content || '';
+    document.getElementById('f-published').checked = a.is_published || false;
+
+    // FAQs
+    const faqs = Array.isArray(a.faqs) ? a.faqs : (a.faqs ? JSON.parse(a.faqs) : []);
+    document.getElementById('faq-builder').innerHTML = '';
+    faqs.forEach(faq => addFaq(faq.question, faq.answer));
+
+    document.getElementById('form-panel-title').textContent = 'Edit Article';
+    document.getElementById('delete-btn').style.display = 'block';
+
+    const btn = document.querySelectorAll('.admin-nav button')[1];
+    showPanel('new', btn);
+    btn.classList.add('active');
+    window.scrollTo(0, 0);
+  } catch (err) {
+    toast('Error loading article', 'error');
+  }
+}
+
+// ── SAVE ARTICLE ──────────────────────────────────────────
+async function saveArticle() {
+  const id = document.getElementById('edit-id').value;
+  const title = document.getElementById('f-title').value.trim();
+  const slug = document.getElementById('f-slug').value.trim();
+
+  if (!title || !slug) { toast('Title and slug are required', 'error'); return; }
+
+  const faqs = [];
+  document.querySelectorAll('.faq-row').forEach(row => {
+    const q = row.querySelector('.faq-q').value.trim();
+    const a = row.querySelector('.faq-a').value.trim();
+    if (q && a) faqs.push({ question: q, answer: a });
+  });
+
+  const payload = {
+    title,
+    slug,
+    category: document.getElementById('f-category').value.trim() || null,
+    read_time: document.getElementById('f-read-time').value.trim() || null,
+    author: document.getElementById('f-author').value.trim() || 'Guru Based',
+    publish_date: document.getElementById('f-publish-date').value || null,
+    excerpt: document.getElementById('f-excerpt').value.trim() || null,
+    cover_image: document.getElementById('f-cover-image').value.trim() || null,
+    audio_url: document.getElementById('f-audio-url').value.trim() || null,
+    content: document.getElementById('f-content').value,
+    faqs: faqs,
+    is_published: document.getElementById('f-published').checked
+  };
+
+  try {
+    let res;
+    if (id) {
+      res = await fetch(`${SUPABASE_URL}/rest/v1/articles?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      res = await fetch(`${SUPABASE_URL}/rest/v1/articles`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    if (res.ok) {
+      toast(id ? 'Article updated ✓' : 'Article created ✓');
+      loadArticles();
+      const btn = document.querySelectorAll('.admin-nav button')[0];
+      showPanel('articles', btn);
+    } else {
+      const err = await res.json();
+      toast(err.message || 'Save failed', 'error');
+    }
+  } catch (err) {
+    toast('Error saving article', 'error');
+  }
+}
+
+// ── DELETE ARTICLE ────────────────────────────────────────
+async function deleteArticle() {
+  const id = document.getElementById('edit-id').value;
+  if (!id) return;
+  if (!confirm('Delete this article? This cannot be undone.')) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/articles?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    if (res.ok) {
+      toast('Article deleted');
+      loadArticles();
+      const btn = document.querySelectorAll('.admin-nav button')[0];
+      showPanel('articles', btn);
+    }
+  } catch (err) {
+    toast('Error deleting article', 'error');
+  }
+}
+
+// ── FORM HELPERS ──────────────────────────────────────────
+function resetForm() {
+  document.getElementById('edit-id').value = '';
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-slug').value = '';
+  document.getElementById('f-category').value = '';
+  document.getElementById('f-read-time').value = '';
+  document.getElementById('f-author').value = 'Guru Based';
+  document.getElementById('f-publish-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-excerpt').value = '';
+  document.getElementById('f-cover-image').value = '';
+  document.getElementById('f-audio-url').value = '';
+  document.getElementById('f-content').value = '';
+  document.getElementById('f-published').checked = false;
+  document.getElementById('faq-builder').innerHTML = '';
+  document.getElementById('form-panel-title').textContent = 'New Article';
+  document.getElementById('delete-btn').style.display = 'none';
+}
+
+function autoSlug() {
+  const id = document.getElementById('edit-id').value;
+  if (id) return; // Don't auto-slug when editing
+  const title = document.getElementById('f-title').value;
+  document.getElementById('f-slug').value = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
+function addFaq(question = '', answer = '') {
+  const builder = document.getElementById('faq-builder');
+  const row = document.createElement('div');
+  row.className = 'faq-row';
+  row.innerHTML = `
+    <input class="faq-q" type="text" placeholder="Question" value="${question}">
+    <input class="faq-a" type="text" placeholder="Answer" value="${answer}">
+    <button class="remove-faq" onclick="this.closest('.faq-row').remove()">✕</button>
+  `;
+  builder.appendChild(row);
+}
+
+// Set today's date on load
+document.getElementById('f-publish-date').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

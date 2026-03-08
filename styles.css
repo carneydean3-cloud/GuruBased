@@ -702,3 +702,57 @@ footer {
   transition: color 0.2s;
 }
 .footer-links a:hover { color: var(--accent); }
+
+/* ─── AUDIO PLAYER ───────────────────────────────────── */
+.audio-player {
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 32px;
+  opacity: 0.9;
+}
+.audio-player__inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.audio-btn {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  padding: 8px 16px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.audio-btn:hover { background: var(--accent); color: var(--bg); }
+.audio-progress-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+}
+.audio-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+.audio-time {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  min-width: 36px;
+  text-align: right;
+}
